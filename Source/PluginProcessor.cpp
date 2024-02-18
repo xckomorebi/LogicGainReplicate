@@ -27,35 +27,9 @@ LogicGainAudioProcessor::LogicGainAudioProcessor()
         juce::File("/Users/xuchen/tmp/LogicGain.log"), "LogicGain",
         1024 * 1024);
 
-    logger->logMessage("LogicGainAudioProcessor::LogicGainAudioProcessor() " +
-                       std::to_string(getNumInputChannels()));
-
     apvts.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(
         "gain", "Gain",
         juce::NormalisableRange<float>(-96.0f, 24.0f, 0.1f, 1.0f), 0.0f, "dB"));
-
-    if (getTotalNumInputChannels() == 1) {
-        apvts.createAndAddParameter(std::make_unique<juce::AudioParameterBool>(
-            "phaseInv", "Phase Invert", false));
-    } else if (getTotalNumInputChannels() == 2) {
-        apvts.createAndAddParameter(std::make_unique<juce::AudioParameterBool>(
-            "phaseInvLeft", "Phase Left", false));
-
-        apvts.createAndAddParameter(std::make_unique<juce::AudioParameterBool>(
-            "phaseInvRight", "Phase Right", false));
-
-        apvts.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(
-            "balance", "Balance",
-            juce::NormalisableRange<float>(-100.0f, 100.0f, 0.5f, 1.0f), 0.0f,
-            "%"));
-
-        apvts.createAndAddParameter(std::make_unique<juce::AudioParameterBool>(
-            "swapLR", "Swap L/R", false));
-
-        apvts.createAndAddParameter(std::make_unique<juce::AudioParameterBool>(
-            "mono", "Make Mono", false));
-    }
-    apvts.state = juce::ValueTree("savedParams");
 }
 
 LogicGainAudioProcessor::~LogicGainAudioProcessor() {}
@@ -119,6 +93,31 @@ void LogicGainAudioProcessor::prepareToPlay(double sampleRate,
     spec.sampleRate = sampleRate;
 
     gain.prepare(spec);
+
+    if (getTotalNumInputChannels() == 1) {
+        apvts.createAndAddParameter(std::make_unique<juce::AudioParameterBool>(
+            "phaseInv", "Phase Invert", false));
+    } else {
+        apvts.createAndAddParameter(std::make_unique<juce::AudioParameterBool>(
+            "phaseInvLeft", "Phase Left", false));
+            
+        apvts.createAndAddParameter(std::make_unique<juce::AudioParameterBool>(
+            "phaseInvRight", "Phase Right", false));
+
+        apvts.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(
+            "balance", "Balance",
+            juce::NormalisableRange<float>(-100.0f, 100.0f, 0.5f, 1.0f), 0.0f,
+            "%"));
+
+        apvts.createAndAddParameter(std::make_unique<juce::AudioParameterBool>(
+            "swapLR", "Swap L/R", false));
+
+        apvts.createAndAddParameter(
+            std::make_unique<juce::AudioParameterBool>("mono", "Make Mono",
+            false));
+    }
+
+    apvts.state = juce::ValueTree("savedParams");
 }
 
 void LogicGainAudioProcessor::releaseResources() {
@@ -163,7 +162,7 @@ void LogicGainAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer,
     gain.process(ctx);
 
     bool isMono = totalNumInputChannels == 1;
-    // param.update(apvts, isMono);
+    param.update(apvts, isMono);
 
     if (buffer.getNumChannels() == 2) {
         auto *channelLeft = buffer.getWritePointer(0);
@@ -236,42 +235,3 @@ void LogicGainAudioProcessor::setStateInformation(const void *data,
 juce::AudioProcessor *JUCE_CALLTYPE createPluginFilter() {
     return new LogicGainAudioProcessor();
 }
-
-// void LogicGainAudioProcessor::setPlayConfigDetails(int newNumInputChannels,
-//                                                    int newNumOutputChannels,
-//                                                    double newSampleRate,
-//                                                    int newBlockSize) {
-//     // Store the number of channels for later use
-//     int numInputChannels = newNumInputChannels;
-//     int numOutputChannels = newNumOutputChannels;
-
-//     // Create and configure parameters based on the channel configuration
-//     apvts.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(
-//         "gain", "Gain",
-//         juce::NormalisableRange<float>(-96.0f, 24.0f, 0.1f, 1.0f), 0.0f,
-//         "dB"));
-
-//     if (numInputChannels == 1) {
-//         apvts.createAndAddParameter(std::make_unique<juce::AudioParameterBool>(
-//             "phaseInv", "Phase Invert", false));
-//     } else if (numInputChannels == 2) {
-//         apvts.createAndAddParameter(std::make_unique<juce::AudioParameterBool>(
-//             "phaseInvLeft", "Phase Left", false));
-
-//         apvts.createAndAddParameter(std::make_unique<juce::AudioParameterBool>(
-//             "phaseInvRight", "Phase Right", false));
-
-//         apvts.createAndAddParameter(std::make_unique<juce::AudioParameterFloat>(
-//             "balance", "Balance",
-//             juce::NormalisableRange<float>(-100.0f, 100.0f, 0.5f, 1.0f),
-//             0.0f,
-//             "%"));
-
-//         apvts.createAndAddParameter(std::make_unique<juce::AudioParameterBool>(
-//             "swapLR", "Swap L/R", false));
-
-//         apvts.createAndAddParameter(std::make_unique<juce::AudioParameterBool>(
-//             "mono", "Make Mono", false));
-//     }
-//     apvts.state = juce::ValueTree("savedParams");
-// }
