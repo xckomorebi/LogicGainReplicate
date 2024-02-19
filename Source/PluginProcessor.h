@@ -19,17 +19,14 @@ struct Params {
     bool swapLR;
     bool mono;
 
-    void update(const juce::AudioProcessorValueTreeState &apvts, bool isMono) {
+    void update(const juce::AudioProcessorValueTreeState &apvts) {
         gain = apvts.getRawParameterValue("gain")->load();
-        if (isMono) {
-            phaseInv = apvts.getRawParameterValue("phaseInv")->load();
-        } else {
-            phaseInvLeft = apvts.getRawParameterValue("phaseInvLeft")->load();
-            phaseInvRight = apvts.getRawParameterValue("phaseInvRight")->load();
-            balance = apvts.getRawParameterValue("balance")->load();
-            swapLR = apvts.getRawParameterValue("swapLR")->load();
-            mono = apvts.getRawParameterValue("mono")->load();
-        }
+        phaseInv = apvts.getRawParameterValue("phaseInv")->load();
+        phaseInvLeft = apvts.getRawParameterValue("phaseInvLeft")->load();
+        phaseInvRight = apvts.getRawParameterValue("phaseInvRight")->load();
+        balance = apvts.getRawParameterValue("balance")->load();
+        swapLR = apvts.getRawParameterValue("swapLR")->load();
+        mono = apvts.getRawParameterValue("mono")->load();
     }
 };
 
